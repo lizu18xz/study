@@ -17,7 +17,6 @@ import java.util.UUID;
  */
 public class LoginResponseHandler extends SimpleChannelInboundHandler<LoginResponsePacket> {
 
-
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, LoginResponsePacket loginResponsePacket){
 

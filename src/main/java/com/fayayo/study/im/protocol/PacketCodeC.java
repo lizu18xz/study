@@ -1,9 +1,7 @@
 package com.fayayo.study.im.protocol;
 
-import com.fayayo.study.im.protocol.request.LoginRequestPacket;
-import com.fayayo.study.im.protocol.request.MessageRequestPacket;
-import com.fayayo.study.im.protocol.response.LoginResponsePacket;
-import com.fayayo.study.im.protocol.response.MessageResponsePacket;
+import com.fayayo.study.im.protocol.request.*;
+import com.fayayo.study.im.protocol.response.*;
 import com.fayayo.study.im.serialize.Serializer;
 import com.fayayo.study.im.serialize.impl.JSONSerializer;
 import io.netty.buffer.ByteBuf;
@@ -34,6 +32,25 @@ public class PacketCodeC {
         packetTypeMap.put(LOGIN_RESPONSE, LoginResponsePacket.class);
         packetTypeMap.put(MESSAGE_REQUEST, MessageRequestPacket.class);
         packetTypeMap.put(MESSAGE_RESPONSE, MessageResponsePacket.class);
+        packetTypeMap.put(LOGOUT_REQUEST, LogoutRequestPacket.class);
+        packetTypeMap.put(LOGOUT_RESPONSE, LogoutResponsePacket.class);
+        packetTypeMap.put(CREATE_GROUP_REQUEST, CreateGroupRequestPacket.class);
+        packetTypeMap.put(CREATE_GROUP_RESPONSE, CreateGroupResponsePacket.class);
+
+        packetTypeMap.put(JOIN_GROUP_REQUEST, JoinGroupRequestPacket.class);
+        packetTypeMap.put(JOIN_GROUP_RESPONSE, JoinGroupResponsePacket.class);
+
+        packetTypeMap.put(QUIT_GROUP_REQUEST,QuitGroupRequestPacket.class);
+        packetTypeMap.put(QUIT_GROUP_RESPONSE,QuitGroupResponsePacket.class);
+
+        packetTypeMap.put(LIST_GROUP_MEMBERS_REQUEST,ListGroupMembersRequestPacket.class);
+        packetTypeMap.put(LIST_GROUP_MEMBERS_RESPONSE,ListGroupMembersResponsePacket.class);
+
+        packetTypeMap.put(GROUP_MESSAGE_REQUEST, GroupMessageRequestPacket.class);
+        packetTypeMap.put(GROUP_MESSAGE_RESPONSE, GroupMessageResponsePacket.class);
+
+        packetTypeMap.put(HEARTBEAT_REQUEST,HeartBeatRequestPacket.class);
+        packetTypeMap.put(HEARTBEAT_RESPONSE,HeartBeatResponsePacket.class);
 
         serializerMap = new HashMap<Byte, Serializer>();
         Serializer serializer = new JSONSerializer();
@@ -79,6 +96,9 @@ public class PacketCodeC {
         byteBuf.readBytes(bytes);
 
         Class<? extends Packet> requestType = getRequestType(command);
+        if (requestType==null){
+            throw new RuntimeException("没有配置参数类型");
+        }
 
         Serializer serializer = getSerializer(serializeAlgorithm);
 

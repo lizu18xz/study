@@ -3,9 +3,8 @@ package com.fayayo.study.im.server;
 import com.fayayo.study.im.codec.PacketDecoder;
 import com.fayayo.study.im.codec.PacketEncoder;
 import com.fayayo.study.im.codec.Spliter;
-import com.fayayo.study.im.server.handler.AuthHandler;
-import com.fayayo.study.im.server.handler.LoginRequestHandler;
-import com.fayayo.study.im.server.handler.MessageRequestHandler;
+import com.fayayo.study.im.handler.IMIdleStateHandler;
+import com.fayayo.study.im.server.handler.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -40,12 +39,35 @@ public class NettyServer {
                 .childHandler(new ChannelInitializer<NioSocketChannel>() {
                     protected void initChannel(NioSocketChannel ch) {
                         //ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 7, 4));
+
+                        // 空闲检测
+                        ch.pipeline().addLast(new IMIdleStateHandler());
+
                         ch.pipeline().addLast(new Spliter());
-                        ch.pipeline().addLast(new PacketDecoder());//解码
-                        ch.pipeline().addLast(new LoginRequestHandler());//处理登陆请求信息
-                        ch.pipeline().addLast(new AuthHandler());
-                        ch.pipeline().addLast(new MessageRequestHandler());
-                        ch.pipeline().addLast(new PacketEncoder());//编码
+                        ch.pipeline().addLast(new PacketDecoder());
+                        // 登录请求处理器
+                        ch.pipeline().addLast(LoginRequestHandler.INSTANCE);
+
+                        ch.pipeline().addLast(HeartBeatRequestHandler.INSTANCE);
+
+                        ch.pipeline().addLast(AuthHandler.INSTANCE);
+                        // 单聊消息请求处理器
+                        ch.pipeline().addLast(MessageRequestHandler.INSTANCE);
+                        // 创建群请求处理器
+                        ch.pipeline().addLast(CreateGroupRequestHandler.INSTANCE);
+                        // 加群请求处理器
+                        ch.pipeline().addLast(JoinGroupRequestHandler.INSTANCE);
+                        // 退群请求处理器
+                        ch.pipeline().addLast(QuitGroupRequestHandler.INSTANCE);
+                        // 获取群成员请求处理器
+                        ch.pipeline().addLast(ListGroupMembersRequestHandler.INSTANCE);
+
+                        ch.pipeline().addLast(GroupMessageRequestHandler.INSTANCE);
+
+                        // 登出请求处理器
+                        ch.pipeline().addLast(LogoutRequestHandler.INSTANCE);
+                        ch.pipeline().addLast(new PacketEncoder());
+
 
                     }
                 });

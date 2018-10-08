@@ -4,6 +4,7 @@ import com.fayayo.study.im.protocol.request.LoginRequestPacket;
 import com.fayayo.study.im.protocol.response.LoginResponsePacket;
 import com.fayayo.study.im.session.Session;
 import com.fayayo.study.im.util.SessionUtil;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -15,8 +16,15 @@ import java.util.UUID;
  * @version v1.0
  * @desc 登陆消息处理类
  */
+// 1. 加上注解标识，表明该 handler 是可以多个 channel 共享的
+@ChannelHandler.Sharable
 public class LoginRequestHandler extends SimpleChannelInboundHandler<LoginRequestPacket> {
 
+    public static final LoginRequestHandler INSTANCE = new LoginRequestHandler();
+
+    private LoginRequestHandler(){
+
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, LoginRequestPacket loginRequestPacket) {
