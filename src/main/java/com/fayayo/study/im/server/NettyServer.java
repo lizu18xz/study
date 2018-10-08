@@ -3,6 +3,7 @@ package com.fayayo.study.im.server;
 import com.fayayo.study.im.codec.PacketDecoder;
 import com.fayayo.study.im.codec.PacketEncoder;
 import com.fayayo.study.im.codec.Spliter;
+import com.fayayo.study.im.server.handler.AuthHandler;
 import com.fayayo.study.im.server.handler.LoginRequestHandler;
 import com.fayayo.study.im.server.handler.MessageRequestHandler;
 import io.netty.bootstrap.ServerBootstrap;
@@ -42,6 +43,7 @@ public class NettyServer {
                         ch.pipeline().addLast(new Spliter());
                         ch.pipeline().addLast(new PacketDecoder());//解码
                         ch.pipeline().addLast(new LoginRequestHandler());//处理登陆请求信息
+                        ch.pipeline().addLast(new AuthHandler());
                         ch.pipeline().addLast(new MessageRequestHandler());
                         ch.pipeline().addLast(new PacketEncoder());//编码
 

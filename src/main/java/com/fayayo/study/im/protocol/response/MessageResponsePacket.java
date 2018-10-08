@@ -7,6 +7,10 @@ import lombok.Data;
 @Data
 public class MessageResponsePacket extends Packet {
 
+    private String fromUserId;//来自谁的消息
+
+    private String fromUserName;
+
     private String message;
 
     @Override

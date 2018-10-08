@@ -14,10 +14,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MessageRequestPacket extends Packet{
 
+    private String toUserId;//指定接收者的id
 
     private String message;
 
-    public MessageRequestPacket(String message) {
+    public MessageRequestPacket(String toUserId, String message) {
+        this.toUserId = toUserId;
         this.message = message;
     }
 
