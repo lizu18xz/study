@@ -1,5 +1,6 @@
 package com.fayayo.study.middleware.channel;
 
+import com.fayayo.study.middleware.Constant;
 import com.fayayo.study.middleware.elements.Record;
 import com.fayayo.study.middleware.record.TerminateRecord;
 import org.apache.commons.lang3.Validate;
@@ -17,7 +18,7 @@ public abstract class Channel {
 
 
     public Channel() {
-        this.capacity=512;
+        this.capacity= Constant.CAPACITY;
     }
 
 

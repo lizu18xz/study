@@ -1,5 +1,6 @@
 package com.fayayo.study.middleware.buffer;
 
+import com.fayayo.study.middleware.Constant;
 import com.fayayo.study.middleware.channel.Channel;
 import com.fayayo.study.middleware.channel.impl.MemoryChannel;
 import com.fayayo.study.middleware.elements.Record;
@@ -24,7 +25,7 @@ public class BufferRecordExchange implements RecordSender,RecordReceiver{
 
     private List<Record> buffer;//保存record数据
 
-    private int bufferSize;
+    private int bufferSize;//一定大小后提交一个批次
 
     private int bufferIndex = 0;
 
@@ -34,7 +35,7 @@ public class BufferRecordExchange implements RecordSender,RecordReceiver{
     public BufferRecordExchange(final Channel channel) {
 
         this.channel=channel;
-        bufferSize=32;
+        bufferSize= Constant.EXCHANGE_SIZE;
         buffer=new ArrayList<>(bufferSize);
     }
 

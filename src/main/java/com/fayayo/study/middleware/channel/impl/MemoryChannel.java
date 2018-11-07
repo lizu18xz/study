@@ -1,5 +1,6 @@
 package com.fayayo.study.middleware.channel.impl;
 
+import com.fayayo.study.middleware.Constant;
 import com.fayayo.study.middleware.channel.Channel;
 import com.fayayo.study.middleware.elements.Record;
 
@@ -34,7 +35,7 @@ public class MemoryChannel extends Channel {
         notInsufficient=lock.newCondition();
         notEmpty=lock.newCondition();
 
-        this.bufferSize=32;
+        this.bufferSize= Constant.EXCHANGE_SIZE;
         this.queue = new ArrayBlockingQueue<Record>(this.getCapacity());//初始化队列的大小512
     }
 
@@ -91,7 +92,7 @@ public class MemoryChannel extends Channel {
         try {
             lock.lockInterruptibly();//加锁控制
 
-            //从队列中获取数据   去bufferSize个数据到集合中
+            //从队列中获取数据   取bufferSize个数据到集合中
             while (this.queue.drainTo(rs,bufferSize)<=0){//说明暂时没有数据，需要去生产数据
                 notEmpty.await(200L, TimeUnit.MILLISECONDS);
             }
