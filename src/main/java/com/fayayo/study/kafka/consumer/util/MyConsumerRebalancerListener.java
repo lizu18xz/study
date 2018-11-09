@@ -31,8 +31,9 @@ public class MyConsumerRebalancerListener implements ConsumerRebalanceListener {
 
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+        //所有分区的设置
         for (TopicPartition partition : partitions) {
-            consumer.seek(partition, offsetManager.readOffsetFromExternalStore(partition.topic(),                             partition.partition()));
+            consumer.seek(partition, offsetManager.readOffsetFromExternalStore(partition.topic(),partition.partition()));
         }
     }
 

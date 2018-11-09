@@ -32,8 +32,9 @@ public class KProducer {
         props.put("acks", "all");//这意味着leader需要等待所有备份都成功写入日志，这种策略会保证只要有一个备份存活就不会丢失数据。这是最强的保证。
         props.put("retries", 0);
         // Controls how much bytes sender would wait to batch up before publishing to Kafka.
-        //控制发送者在发布到kafka之前等待批处理的字节数。
-        props.put("batch.size", 10);
+        //控制发送者在发布到kafka之前等待批处理的字节数。 满足batch.size和ling.ms之一，producer便开始发送消息
+        //默认16384   16kb
+        props.put("batch.size", 16384);
         props.put("linger.ms", 1);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");

@@ -31,7 +31,15 @@
 
 
 ### kafka 学习 版本 0.9.0.1
+- 生产者
+- 三种语义的消费模型
+- 参数 max.partition.fetch.bytes,batch.size
 
+### es的使用  新闻搜索案列
+- mapping 建立
+- api的使用
+- 修改了结构后，重新索引数据
+- 别名的使用
 
 
 

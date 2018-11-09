@@ -8,6 +8,13 @@
     <artifactId>study</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.0.2.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
     <properties>
         <netty-all.version>4.1.6.Final</netty-all.version>
         <lombok.version>1.16.20</lombok.version>
@@ -15,10 +22,24 @@
         <junit.version>4.12</junit.version>
         <commons.lang3.version>3.5</commons.lang3.version>
         <kafka.version>0.9.0.1</kafka.version>
+        <elasticsearch.version>6.3.2</elasticsearch.version>
     </properties>
 
 
     <dependencies>
+
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -29,20 +50,20 @@
 
         <!-- 1.日志 -->
         <!-- 实现slf4j接口并整合 -->
-        <!--<dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.1</version>
-        </dependency>-->
 
-        <dependency>
+        <!--<dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.5</version>
             <scope>compile</scope>
+        </dependency>-->
+
+
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>${elasticsearch.version}</version>
         </dependency>
-
-
 
         <dependency>
             <groupId>io.netty</groupId>
@@ -100,6 +121,10 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
