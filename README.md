@@ -36,7 +36,7 @@
 - 参数 max.partition.fetch.bytes,batch.size
 
 ### es的使用  新闻搜索案列
-- mapping 建立
+- 索引mapping 建立
 - api的使用
 - 修改了结构后，重新索引数据
 - 别名的使用
