@@ -9,7 +9,7 @@ public class CometIndexKey {
 
     public static final String INDEX_NAME="comet";
 
-    public static final String COMET_ID="cometid";          //唯一标示
+    public static final String COMET_ID="cometId";          //唯一标示
 
     public static final String TITLE="title";                   //标题
 

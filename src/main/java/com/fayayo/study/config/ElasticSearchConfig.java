@@ -5,6 +5,7 @@ import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 public class ElasticSearchConfig implements DisposableBean{
 
 
+    // Java High Level REST Client
     @Bean
     public RestHighLevelClient client(){
         RestHighLevelClient client = new RestHighLevelClient(
@@ -33,4 +35,7 @@ public class ElasticSearchConfig implements DisposableBean{
         log.info("关闭连接");
         client().close();
     }
+
+
+
 }
