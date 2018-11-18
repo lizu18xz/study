@@ -34,16 +34,4 @@ public class CometIndex {
 
     private List<CometSuggest> suggest;  //固定格式 ES
 
-
-
-
-
-
-
-
-
-
-
-
-
 }

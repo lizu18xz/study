@@ -24,8 +24,10 @@ PUT comet
           "search_analyzer": "ik_smart"
         },
         "author": {
-          "type": "keyword"
-        },
+           "type": "text",
+           "analyzer": "ik_smart",
+           "search_analyzer": "ik_smart"
+         },
         "editor": {
           "type": "keyword"
         },

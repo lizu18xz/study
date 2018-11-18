@@ -23,19 +23,11 @@ public class CometIndexKey {
 
     public static final String CONTENT="content";                  //内容
 
-    public static final String createtime="createTime";              //创建时间
+    public static final String CREATE_TIME="createTime";              //创建时间
 
 
-
-
-
-
-
-
-
-
-
-
+    //agg
+    public static final String CATEGORY_AGG="category_agg";                 //分类
 
 
 }

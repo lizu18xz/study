@@ -27,10 +27,18 @@ public class RentSearch {
 
     private String category;
 
-    private boolean highlight;
+    private boolean highlight=false;
 
     private Long startTime;
 
     private Long endTime;
+
+    private String orderBy = "createTime";
+
+    private String orderDirection = "desc";
+
+    private int start = 0;
+
+    private int size = 5;
 
 }
