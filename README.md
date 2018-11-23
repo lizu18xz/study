@@ -40,7 +40,22 @@
 - api的使用
 - 修改了结构后，重新索引数据
 - 别名的使用
+````
+创建别名
+PUT /comet_v1/_alias/comet
 
+查看信息
+GET /*/_alias/comet
+
+重新索引别名
+POST /_aliases
+{
+    "actions": [
+        { "remove": { "index": "comet_v1", "alias": "comet" }},
+        { "add":    { "index": "comet_v2", "alias": "comet" }}
+    ]
+} 
+````
 
 
 

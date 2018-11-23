@@ -17,7 +17,6 @@ import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeRequest;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeResponse;
-import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -511,6 +510,7 @@ public class SearchServiceImpl implements SearchService {
                     // do something with the SearchHit
                     Map<String, Object> sourceAsMap =  hit.getSourceAsMap();
                     log.info("title:{}",sourceAsMap.get(CometIndexKey.TITLE));
+                    //TODO 加入自己的处理
                 }
 
                 log.info("scrollId:{}",scrollId);
@@ -520,7 +520,6 @@ public class SearchServiceImpl implements SearchService {
                 scrollId = searchResponse.getScrollId();//获取下一次scrollId
                 log.info("scrollId:{}",scrollId);
                 hits = searchResponse.getHits().getHits();
-
             }
 
             //release the search context
@@ -536,6 +535,103 @@ public class SearchServiceImpl implements SearchService {
 
     }
 
+    @Override
+    public void reIndex(String originIndex, String newIndex) {
+        //scroll 查询  批量插入
+        try {
+
+            final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
+            SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(originIndex);//设置指定的索引
+            searchRequest.scroll(scroll);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.matchAllQuery());//查询所有
+            searchSourceBuilder.size(1000);
+            searchRequest.source(searchSourceBuilder);
+
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            String scrollId = searchResponse.getScrollId();//获取第一次scrollId
+
+            SearchHits searchHits=searchResponse.getHits();
+            log.info("scrollId:{},total:{}",scrollId,searchHits.getTotalHits());
+            SearchHit[] hits=searchHits.getHits();
+
+            while (hits != null && hits.length > 0) {
+
+                List<CometIndex> list = Lists.newArrayList();
+                CometIndex cometIndex=null;
+                for (SearchHit hit : hits) {
+                    cometIndex=new CometIndex();
+                    // do something with the SearchHit
+                    Map<String, Object> sourceAsMap =  hit.getSourceAsMap();
+                    //调用bulk
+                    cometIndex.setTitle(sourceAsMap.getOrDefault(CometIndexKey.TITLE,"").toString());
+                    cometIndex.setEditor(sourceAsMap.getOrDefault(CometIndexKey.EDITOR,"").toString());
+                    cometIndex.setDescription(sourceAsMap.getOrDefault(CometIndexKey.DESCRIPTION,"").toString());
+                    cometIndex.setContent(sourceAsMap.getOrDefault(CometIndexKey.CONTENT,"").toString());
+                    cometIndex.setCreateTime(new Date());
+                    cometIndex.setCategory(sourceAsMap.getOrDefault(CometIndexKey.CATEGORY,"").toString());
+
+                    cometIndex.setCometId(Long.parseLong(sourceAsMap.get(CometIndexKey.COMET_ID).toString()));
+
+                    cometIndex.setAuthor(sourceAsMap.getOrDefault(CometIndexKey.AUTHOR,"").toString());
+                    list.add(cometIndex);
+                }
+
+                bulk(list,newIndex);
+
+                log.info("scrollId:{}",scrollId);
+                SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);//根据scrollId检索
+                scrollRequest.scroll(scroll);
+                searchResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
+                scrollId = searchResponse.getScrollId();//获取下一次scrollId
+                log.info("scrollId:{}",scrollId);
+                hits = searchResponse.getHits().getHits();
+
+            }
+            //release the search context
+            ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+            clearScrollRequest.addScrollId(scrollId);
+            ClearScrollResponse clearScrollResponse = client.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+            boolean succeeded = clearScrollResponse.isSucceeded();
+
+            log.info("ScrollRequest result:{}",succeeded);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public void bulk(List<CometIndex> list,String indexName) {
+
+        //批量插入数据
+        BulkRequest request = new BulkRequest();
+
+        try {
+            for (CometIndex json:list){
+                request.add(new IndexRequest(indexName, indexName)
+                        .source(objectMapper.writeValueAsString(json), XContentType.JSON));
+            }
+
+            BulkResponse bulkResponse = client.bulk(request, RequestOptions.DEFAULT);
+
+            //The Bulk response provides a method to quickly check if one or more operation has failed:
+            if (bulkResponse.hasFailures()) {
+                log.info("all success");
+            }
+            TimeValue took = bulkResponse.getTook();
+            log.info("[批量新增花费的毫秒]:{},({}),{}", took, took.getMillis(), took.getSeconds());
+            //所有操作结果进行迭代
+            /*for (BulkItemResponse bulkItemResponse : bulkResponse) {
+                if (bulkItemResponse.isFailed()) {
+                    BulkItemResponse.Failure failure = bulkItemResponse.getFailure();
+                }
+            }*/
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
 
     private void convert(SearchHit hit,CometIndexVO cometIndexVO,boolean isHighlight){
 

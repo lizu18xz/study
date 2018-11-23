@@ -3,6 +3,7 @@ package com.fayayo.study.comet;
 import com.fayayo.study.comet.SearchService;
 import com.fayayo.study.comet.form.RentSearch;
 import com.fayayo.study.comet.templet.CometIndex;
+import com.fayayo.study.comet.templet.CometIndexKey;
 import com.fayayo.study.comet.vo.CometIndexVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -108,11 +109,11 @@ public class CometServiceTest {
            CometIndex cometIndex=new CometIndex();
            cometIndex.setCometId((long)i);
            cometIndex.setAuthor("心机boy");
-           cometIndex.setCategory("movie");
-           cometIndex.setContent("肖申克的救赎"+i);
-           cometIndex.setDescription("肖申克的救赎满分");
+           cometIndex.setCategory("article");
+           cometIndex.setContent("人与人讲述的是"+i);
+           cometIndex.setDescription("人与人讲述的是......");
            cometIndex.setEditor("cctv");
-           cometIndex.setTitle("肖申克的救赎"+i);
+           cometIndex.setTitle("人与人"+i);
            cometIndex.setCreateTime(new Date());
            list.add(cometIndex);
            count++;
@@ -125,9 +126,19 @@ public class CometServiceTest {
 
     }
 
+
+    @Test
+    public void reIndex(){
+        searchService.reIndex("comet_v1","comet_v2");
+    }
+
+
+
     @Test
     public void test(){
         System.out.println(500%100);
     }
+
+
 
 }

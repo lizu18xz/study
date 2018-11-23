@@ -36,5 +36,5 @@ public interface SearchService {
     void scrollScan();
 
     //别名使用
-
+    void reIndex(String originIndex,String newIndex);
 }
