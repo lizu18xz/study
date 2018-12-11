@@ -60,7 +60,7 @@ public class MemoryChannel extends Channel {
 
             //TODO 大小计算判断
             while (rs.size() > this.queue.remainingCapacity()) {//检查剩余可以插入的数量,如果插入数量大于队列数量会报错，所以在这里进行控制
-                notInsufficient.await(200L, TimeUnit.MILLISECONDS);//设置超时时间自动重试
+                notInsufficient.await(200L, TimeUnit.MILLISECONDS);//设置超时时间自动重试,等待非满的时候(有足够空间可以插入)
             }
             queue.addAll(rs);
             notEmpty.signalAll();//唤醒等待的线程
@@ -94,7 +94,7 @@ public class MemoryChannel extends Channel {
 
             //从队列中获取数据   取bufferSize个数据到集合中
             while (this.queue.drainTo(rs,bufferSize)<=0){//说明暂时没有数据，需要去生产数据
-                notEmpty.await(200L, TimeUnit.MILLISECONDS);
+                notEmpty.await(200L, TimeUnit.MILLISECONDS);//等待非空
             }
 
             //TODO 计算总数据量的大小
