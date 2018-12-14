@@ -31,7 +31,6 @@ public class ExactlyOnceDynamicConsumer {
     }
 
 
-
     private static OffsetManager offsetManager = new OffsetManager("storage2");
 
     private static KafkaConsumer<String, String> createConsumer() {
@@ -46,7 +45,7 @@ public class ExactlyOnceDynamicConsumer {
         // Control maximum data on each poll, make sure this value is bigger than the maximum  // single message size
         props.put("max.partition.fetch.bytes", "5242880");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         return new KafkaConsumer<String, String>(props);
     }
 
@@ -55,10 +54,11 @@ public class ExactlyOnceDynamicConsumer {
         while (true) {
             ConsumerRecords<String, String> records = consumer.poll(100);
             for (ConsumerRecord<String, String> record : records) {
-                System.out.printf("offset = %d, key = %s, value = %s\n", record.offset(), record.key(), record.value());
+                System.out.printf("offset = %d, partition = %s, key = %s, value = %s\n", record.offset(), record.partition(),
+                        record.key(), record.value());
                 // Save processed offset in external storage.
                 //格式  主题  哪个分区   读取到 这个分区的哪个offset
-                offsetManager.saveOffsetInExternalStore(record.topic(), record.partition(),record.offset());
+                offsetManager.saveOffsetInExternalStore(record.topic(), record.partition(), record.offset());
             }
         }
     }

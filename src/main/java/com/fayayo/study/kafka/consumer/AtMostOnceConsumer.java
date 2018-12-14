@@ -10,7 +10,7 @@ import java.util.Properties;
 /**
  * @author dalizu on 2018/11/6.
  * @version v1.0
- * @desc 最多消费一次，会存在 丢失数据  也有可能会数据重复
+ * @desc 最多消费一次，会存在 丢失数据  也有可能会数据重复 自动提交 enable.auto.commit", "true"
  */
 public class AtMostOnceConsumer {
 
@@ -24,7 +24,6 @@ public class AtMostOnceConsumer {
         processRecords(consumer);
 
     }
-
 
 
     private static KafkaConsumer<String, String> createConsumer() {
@@ -53,18 +52,20 @@ public class AtMostOnceConsumer {
         return new KafkaConsumer<String, String>(props);
     }
 
-    private static void processRecords(KafkaConsumer<String, String> consumer)  {
+    private static void processRecords(KafkaConsumer<String, String> consumer) {
         while (true) {
             ConsumerRecords<String, String> records = consumer.poll(100);
             long lastOffset = 0;
             for (ConsumerRecord<String, String> record : records) {
-                System.out.printf("\n\roffset = %d, key = %s, value = %s", record.offset(),record.key(), record.value());
+                System.out.printf("offset = %d, partition = %s, key = %s, value = %s\n", record.offset(), record.partition(),
+                        record.key(), record.value());
                 //offset = 56, key = 10, value = producer_msg10   lastOffset read: 56
                 lastOffset = record.offset();
             }
             process();
         }
     }
+
     private static void process() {
         // create some delay to simulate processing of the message. 模拟业务逻辑
         try {

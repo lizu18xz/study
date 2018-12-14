@@ -4,6 +4,8 @@ import com.fayayo.study.middleware.elements.Column;
 import com.fayayo.study.middleware.elements.Record;
 import com.lmax.disruptor.WorkHandler;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * @author dalizu on 2018/11/7.
  * @version v1.0
@@ -15,12 +17,13 @@ public class RecordWorkHandler implements WorkHandler<RecordEvent>{
 
     private long startTime;
 
+    private static final AtomicLong sums = new AtomicLong(0);
+
     public RecordWorkHandler(String consumerId) {
         this.consumerId = consumerId;
         startTime=System.nanoTime();
     }
 
-    private int c;
 
     @Override
     public void onEvent(RecordEvent event) throws Exception {
@@ -39,9 +42,8 @@ public class RecordWorkHandler implements WorkHandler<RecordEvent>{
             }
         }
 
-        c++;
-        //System.out.println("处理数据:"+c);
-        if (c == 100000000) {
+        sums.incrementAndGet();
+        if (sums.get() == 100000000) {
             long endTime = System.nanoTime();
             System.out.println("耗时:"+(endTime-startTime)/1000000000+" s");
         }

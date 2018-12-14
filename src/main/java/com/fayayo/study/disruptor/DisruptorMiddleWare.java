@@ -5,16 +5,12 @@ import com.fayayo.study.disruptor.core.RecordEventFactory;
 import com.fayayo.study.disruptor.core.RecordWorkHandler;
 import com.fayayo.study.disruptor.storage.Storage;
 import com.fayayo.study.disruptor.storage.impl.DefaultStorage;
-import com.fayayo.study.middleware.buffer.BufferRecordExchange;
 import com.fayayo.study.middleware.elements.Record;
 import com.fayayo.study.middleware.elements.StringColumn;
 import com.fayayo.study.middleware.record.DefaultRecord;
-import com.lmax.disruptor.BlockingWaitStrategy;
-import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.YieldingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
-
 import java.util.concurrent.Executors;
 
 /**
@@ -30,6 +26,7 @@ public class DisruptorMiddleWare {
         int producerCount=1;
 
         int writerParallelism=1;//消费者的格式
+
         final RecordWorkHandler[] handlers = new RecordWorkHandler[writerParallelism];
         //配置disruptior的  消费者
         for (int i = 0; i < writerParallelism; i++) {
@@ -50,11 +47,14 @@ public class DisruptorMiddleWare {
                 new YieldingWaitStrategy());
         Storage storage = new DefaultStorage(disruptor, handlers);
 
+        //生产数据
         new Thread(new Runnable() {
 
             public void run() {
                 //提交到线程池,进行读取数据
                 producerData(storage);
+
+                disruptor.shutdown();//关闭 disruptor，方法会堵塞，直至所有的事件都得到处理；
             }
         }).start();
 
@@ -63,12 +63,10 @@ public class DisruptorMiddleWare {
     private static void producerData(Storage storage) {
         for (int i=0;i<100000000;i++){
             StringColumn stringColumn=new StringColumn("test"+i);
-
             Record record=new DefaultRecord();
             record.addColumn(stringColumn);
             storage.put(record);
         }
-
     }
 
 }

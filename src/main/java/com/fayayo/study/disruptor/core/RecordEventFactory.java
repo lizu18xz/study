@@ -9,7 +9,6 @@ import com.lmax.disruptor.EventFactory;
  */
 public class RecordEventFactory implements EventFactory<RecordEvent> {
 
-
     @Override
     public RecordEvent newInstance() {
         return new RecordEvent();

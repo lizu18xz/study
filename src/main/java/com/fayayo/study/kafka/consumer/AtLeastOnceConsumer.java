@@ -11,6 +11,7 @@ import java.util.Properties;
  * @author dalizu on 2018/11/6.
  * @version v1.0
  * @desc 至少消费一次，会重复消费  这种方式就是要手动在处理完该次poll得到消息之后，调用offset异步提交函数consumer.commitSync()。
+ *       "enable.auto.commit", "false"
  */
 public class AtLeastOnceConsumer {
 
@@ -40,10 +41,9 @@ public class AtLeastOnceConsumer {
         props.put("heartbeat.interval.ms", "3000");
         props.put("session.timeout.ms", "6001");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         return new KafkaConsumer<String, String>(props);
     }
-
 
 
     private static void processRecords(KafkaConsumer<String, String> consumer) {
@@ -51,7 +51,8 @@ public class AtLeastOnceConsumer {
             ConsumerRecords<String, String> records = consumer.poll(100);
             long lastOffset = 0;
             for (ConsumerRecord<String, String> record : records) {
-                System.out.printf("\n\roffset = %d, key = %s, value = %s", record.offset(),                                         record.key(), record.value());
+                System.out.printf("\n\roffset = %d, partition = %s, key = %s, value = %s\n", record.offset(), record.partition(),
+                        record.key(), record.value());
                 lastOffset = record.offset();
             }
             System.out.println("\n\r===========>lastOffset read: " + lastOffset);
@@ -61,7 +62,8 @@ public class AtLeastOnceConsumer {
             consumer.commitSync();
         }
     }
-    private static void process()  {
+
+    private static void process() {
         // create some delay to simulate processing of the record.
         try {
             Thread.sleep(20);
@@ -69,15 +71,6 @@ public class AtLeastOnceConsumer {
             e.printStackTrace();
         }
     }
-
-
-
-
-
-
-
-
-
 
 
 }

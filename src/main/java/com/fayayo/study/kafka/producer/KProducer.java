@@ -1,8 +1,7 @@
 package com.fayayo.study.kafka.producer;
 
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.*;
 
 import java.util.Properties;
 
@@ -11,6 +10,7 @@ import java.util.Properties;
  * @version v1.0
  * @desc 生产者
  */
+@Slf4j
 public class KProducer {
 
     public static void main(String[] args) throws InterruptedException {
@@ -44,16 +44,40 @@ public class KProducer {
     private static void sendMessages(Producer<String, String> producer) {
         System.out.println("start send message......");
         String topic = "test-topic";
-        int partition = 0;//指定分区发送
+        int partition = 1;//指定分区发送
         long record = 1;
-        for (int i = 1; i <= 10; i++) {
-            producer.send(
+        for (int i = 1; i <= 200; i++) {
+
+            //指定分区发送
+            /*producer.send(
                     new ProducerRecord<String, String>(topic, partition,
-                            Long.toString(record),"producer_msg"+Long.toString(record++)));
+                            Long.toString(record),"producer_msg"+Long.toString(record++)),new SendCallBack());*/
+
+            //不指定分区,会均匀发送
+            producer.send(
+                    new ProducerRecord<String, String>(topic,"producer_msg"+Long.toString(record++)),new SendCallBack());
         }
         System.out.println("start send message......end");
     }
 
 
+    /**
+     *
+     Future<RecordMetadata> send(ProducerRecord<K, V> producer, Callback callback);
+     Callback 是一个回调接口，在消息发送完成之后可以回调我们自定义的实现
+     * */
+    private static class SendCallBack implements Callback{
+
+        @Override
+        public void onCompletion(RecordMetadata recordMetadata, Exception e) {
+            if(null!=recordMetadata){
+
+                log.info("msg offset,partition,topic"+
+                        recordMetadata.offset(),recordMetadata.partition(),recordMetadata.topic(),recordMetadata);
+            }else {
+                System.out.println("发送异常");
+            }
+        }
+    }
 
 }

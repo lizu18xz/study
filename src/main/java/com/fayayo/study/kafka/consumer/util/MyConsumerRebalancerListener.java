@@ -1,5 +1,6 @@
 package com.fayayo.study.kafka.consumer.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.common.TopicPartition;
@@ -12,6 +13,7 @@ import java.util.Collection;
  * @desc 实现一个ConsumerRebalanceListener，在该listener内部执行
         consumer.seek(topicPartition,offset)，从指定的topic/partition的offset处启动。
  */
+@Slf4j
 public class MyConsumerRebalancerListener implements ConsumerRebalanceListener {
 
     private OffsetManager offsetManager = new OffsetManager("storage2");
@@ -29,6 +31,7 @@ public class MyConsumerRebalancerListener implements ConsumerRebalanceListener {
         }
     }
 
+    //重新分配partition之后和消费者开始读取消息之前被调用。
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
         //所有分区的设置
