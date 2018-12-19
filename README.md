@@ -34,6 +34,7 @@
 - 生产者
 - 三种语义的消费模型
 - 参数 max.partition.fetch.bytes,batch.size
+- 多线程消费
 
 ### es的使用  新闻搜索案列
 - 索引mapping 建立
@@ -82,13 +83,39 @@ POST /_aliases
 - shell
 - resources
 
+### Mysql索引
+````
+- 索引常用的操作
+新增一个普通索引
+alter table faya_job_log add index index_job_id (job_id) ;
+
+删除索引
+drop index index_job_id on faya_job_log ;
+
+查询表存在的索引
+SHOW INDEX FROM faya_job_log;
+
+- EXPLAIN命令
+先了解 这个命令具体的返回
+EXPLAIN select * from faya_job_log;
+
+id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra 
+......
+
+一般我会关注几个字段
+rows：扫描行的数量，就是这个sql执行会扫描的数据行数，行数越大意味着查询会越慢。
+
+type:代表MySQL在表中找到所需行的方式，常见的如下，性能由差到最好：
+
+type=ALL，全表扫描，MySQL遍历全表来找到匹配行
+type=index，索引全扫描，MySQL遍历整个索引来查询匹配行，并不会扫描表
+type=range	索引范围扫描
+type=ref	非唯一索引扫描
+type=eq_ref	唯一索引扫描
+type=const,system	单表最多有一个匹配行,出现在根据主键primary key或者 唯一索引 unique index 进行的查询
 
 
+possible_keys: 表示查询可能使用的索引
 
-
-
-
-
-
-
-
+key: 实际使用的索引
+````

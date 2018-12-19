@@ -23,6 +23,7 @@ public class ConsumerCallable implements Runnable {
     public ConsumerCallable(Properties props) {
         this.props = props;
         consumer = new KafkaConsumer<String, String>(props);
+
     }
 
 
