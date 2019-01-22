@@ -128,6 +128,13 @@
         </dependency>
 
 
+        <!-- binlog-->
+        <dependency>
+            <groupId>com.github.shyiko</groupId>
+            <artifactId>mysql-binlog-connector-java</artifactId>
+            <version>0.17.0</version>
+        </dependency>
+
     </dependencies>
 
 

@@ -25,6 +25,40 @@
 - 自定义线程池
 
 
+### Mysql BinLog
+- https://github.com/shyiko/mysql-binlog-connector-java
+- 原理:
+````
+
+ 数据库为了主从复制结构和容灾，都会有一份提交日志 (commit log)，通过解析这份日志，
+ 理论上说可以获取到每次数据库的数据更新操作。获取到这份日志有两种方式：
+ 在 MySQL server 上通过外部程序监听磁盘上的 binlog 日志文件
+ 借助于 MySQL 的 Master-Slave 结构，使用程序伪装成一个单独的 Slave，通过网络获取到 MySQL 的binlog 日志流
+ 
+ 这里有一个注意的点： MySQL 的 binlog 支持三种格式：Statement 、 Row 和 Mixed 格式：
+ 
+ 
+ Statement 格式就是说日志中记录 Master 执行的 SQL
+ 
+ Row 格式就是说每次将更改的数据记录到日志中
+ 
+ Mixed 格式就是让 Master 自主决定是使用 Row 还是 Statement 格式
+ 
+ 由于伪装成 Slave 的解析程序很难像 MySQL slave 一样通过 Master 执行的 SQL 来获取数据更新，因此要将 MySQL Master 的 binlog 格式调整成 Row 格式才方便实现数据更新获取服务
+ 
+ 
+ binlog 状态维护模块
+ 在 MySQL 中， Master-slave 之间只用标识：
+ 
+ serverId：master一般设置为1， 各个 server 之间必须不同
+ binlog 文件名称：当前读取到了哪一个 binlog 文件
+ binlog position：当前读取的 binlog 文件的位置
+ 
+ 由于同步服务会重启，因此必须自行维护 binlog 的状态。一般存储到 MySQL 或者 Zookeeper 中。当服务重启后，自动根据存储的 binlog 位置，继续同步数据
+ 
+````
+
+
 ### 算法
 - 排序算法
 - 二分查找

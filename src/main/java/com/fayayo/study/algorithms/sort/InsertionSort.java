@@ -39,6 +39,45 @@ public class InsertionSort {
     }
 
 
+
+
+    public Object[] sort(Object[] array, int len) {
+            int j;
+            int temp = 0;
+            for (int p = 1; p < len; p++) {
+                temp = (int) array[p];
+                for (j = p; j > 0 && temp < (int) array[j - 1]; j--) {
+                    array[j] = array[j - 1];
+                }
+                array[j] = temp;
+            }
+            return array;
+
+    }
+
+    public Object[] sort1(Object[] array, int len) {
+
+
+        for (int i=0;i<len;i++){
+
+            for (int j=i;j>0;i--){
+                if((int)array[j]<(int)array[j-1]){//后面的小于前面的，前移  132  123
+                    //swap
+                    int tmp=(int)array[j];
+                    array[j]=array[j-1];
+                    array[j-1]=tmp;
+
+                }else {
+                    break;//退出该循环
+                }
+            }
+        }
+        return array;
+    }
+
+
+
+
     public static void main(String[] args) {
 
         Integer[] arr = {10,9,8,7,6,5,4,3,2,1,11};
