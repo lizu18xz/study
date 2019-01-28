@@ -153,3 +153,48 @@ possible_keys: 表示查询可能使用的索引
 
 key: 实际使用的索引
 ````
+
+
+### Hadoop 服务库和事件库的学习
+````
+事件驱动
+YARN采用了基于事件驱动的并发模型，该模型能够大大增强并发性，从而提高系统整体性能。
+Hadoop服务库与事件库的使用及其工作流程
+中央异步调度器AsyncDispatcher
+hadoop服务库:
+YARN采用了基于服务的对象管理模型,主要特点有:
+被服务化的对象分4个状态:NOTINITED,INITED,STARTED,STOPED
+任何服务状态变化都可以触发另外一些动作
+可通过组合方式对任意服务进行组合,统一管理
+具体类请参见 org.apache.hadoop.service包下.核心接口是Service,抽象实现是AbstractService
+YARN中,ResourceManager和NodeManager属于组合服务,内部包含多个单一和组合服务.以实现对内部多种服务的统一管理.
+Hadoop事件库:
+YARN采用事件驱动并发模型, 把各种逻辑抽象成事件,进入事件队列,然后由中央异步调度器负责传递给相应的事件调度器处理,或者调度器之间再传递,直至完成任务.
+流程:
+	创建一个AsyncDispatcher对象
+	向AsyncDispatcher中注册枚举类型和事件的处理器(EventHandler)
+	然后启动,启动后会创建一个eventHandlingThread线程
+	线程执行的流程是，从等待队列中取出事件，从事件对象中获取事件类型，然后根据事件类型获取事件处理器，然后进行事件的处理
+	提交任务的流程:
+	将任务放入等待的队列，就可以离开了
+
+````
+
+```text
+具体源码分析可以参考之前写的一篇文章:
+https://www.imooc.com/article/276053
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
