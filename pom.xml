@@ -157,10 +157,7 @@
             <artifactId>hadoop-yarn-common</artifactId>
             <version>2.4.0</version>
         </dependency>
-
-
     </dependencies>
-
 
     <build>
         <plugins>

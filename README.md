@@ -69,6 +69,22 @@
 - 三种语义的消费模型
 - 参数 max.partition.fetch.bytes,batch.size
 - 多线程消费
+````
+批次管理
+批次创建后会逗留linger.ms时间，它集聚该段时间内归属该分组（区）的消息。如果生产速率特别高又或者有超大消息流入很快将分区打满，则实际逗留时间会低于linger.ms。
+想象一下极端场景，批次大小默认16k，如果消息以5k、12k间隔发，则内存实际利用率只有（5+12）/(2*16)。
+
+另一方面，积累器挤出前先要做就绪节点检查，挤出动作也只针对leader在这些节点上的分区批次，但节点ready to drain后，可能因为连接或者inflightRequests超限等问题，
+被从发送就绪列表移除，从而导致这些节点的可发送批次不会被挤出。它们始终占据分组队列的最高挤出优先级，这会导致：1）后追加的消息被积压，即使连接恢复后新入的消息也只能等待顺序处理，
+整体投递延时猛增。2）批次占据的内存得不到释放，有可能发生雪崩：因为只有追加没有挤出，问题节点的批次有可能占满全部内存空间导致其他正常节点分区无法为新批次申请空间。
+Kafka提供请求超时timeout.ms解决这个问题，从逗留截止开始计算批次超时则被废弃–释放内存空间并从分组队列移除。
+
+理想状况下，单位时间内追入和挤出应该恰好相等且内存被充分使用。长期观察下调好linger.ms、batch.size、timeout.ms以及batch.size和buffer.memory这几个参数将有助于达到这个目标。
+
+内存管理
+消息集内存直接分配在堆上，如果对它不加以限制在消息生产速率足够高时很可能频繁出现fgc乃至oom，另一方面频繁的内存申请和释放操作也很吃系统资源，因此Kafka自建了内存池BufferPool管理内存。
+
+````
 
 ### es的使用  新闻搜索案列
 - 索引mapping 建立
@@ -185,7 +201,26 @@ YARN采用事件驱动并发模型, 把各种逻辑抽象成事件,进入事件�
 https://www.imooc.com/article/276053
 ```
 
+### J.U.C  Future使用
+````
+Future可以看成线程在执行时留给调用者的一个存根，通过这个存在可以进行查看线程执行状态(isDone)、
+取消执行(cancel)、阻塞等待执行完成并返回结果(get)、异步执行回调函数(callback)等操作。
+自己实现一个ResponseFuture
 
+关于:condition.await()
+当前线程调用condition.await()方法后，会使得当前线程释放lock然后加入到等待队列中，
+直至被signal/signalAll后会使得当前线程从等待队列中移至到同步队列中去，直到获得了lock后才会从await方法返回，或者在等待时被中断会做中断处理。
+
+调用condition的signal或者signalAll方法可以将等待队列中等待时间最长的节点移动到同步队列中，使得该节点能够有机会获得lock。
+
+线程awaitThread先通过lock.lock()方法获取锁成功后调用了condition.await方法进入等待队列，
+而另一个线程signalThread通过lock.lock()方法获取锁成功后调用了condition.signal或者signalAll方法，
+使得线程awaitThread能够有机会移入到同步队列中，当其他线程释放lock后使得线程awaitThread能够有机会获取lock，
+从而使得线程awaitThread能够从await方法中退出执行后续操作。如果awaitThread获取lock失败会直接进入到同步队列。
+
+
+
+````
 
 
 
