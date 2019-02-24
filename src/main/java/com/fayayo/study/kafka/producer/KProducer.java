@@ -8,7 +8,7 @@ import java.util.Properties;
 /**
  * @author dalizu on 2018/11/6.
  * @version v1.0
- * @desc 生产者
+ * @desc 生产者,自定义分区  注释
  */
 @Slf4j
 public class KProducer {
@@ -38,6 +38,10 @@ public class KProducer {
         props.put("linger.ms", 1);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        /*//自定义分区配置
+        props.put("partitioner.class","com.fayayo.study.kafka.partition.CoustomPartitioner");*/
+
         return new KafkaProducer(props);
     }
 
@@ -70,13 +74,16 @@ public class KProducer {
 
         @Override
         public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-            if(null!=recordMetadata){
 
-                log.info("msg offset,partition,topic"+
-                        recordMetadata.offset(),recordMetadata.partition(),recordMetadata.topic(),recordMetadata);
-            }else {
+            if(e!=null){
                 System.out.println("发送异常");
+                e.printStackTrace();
+                return;
             }
+
+            log.info("msg offset,partition,topic"+
+                        recordMetadata.offset(),recordMetadata.partition(),recordMetadata.topic(),recordMetadata);
+
         }
     }
 

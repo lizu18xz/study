@@ -23,6 +23,7 @@ public class MyConsumerRebalancerListener implements ConsumerRebalanceListener {
         this.consumer = consumer;
     }
 
+    //会在再均衡开始之前和消费者停止读取消息之后被调用
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
         for (TopicPartition partition : partitions) {

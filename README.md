@@ -56,6 +56,28 @@
  
  由于同步服务会重启，因此必须自行维护 binlog 的状态。一般存储到 MySQL 或者 Zookeeper 中。当服务重启后，自动根据存储的 binlog 位置，继续同步数据
  
+ 
+ //    Write---------------
+ //    WriteRowsEventData{tableId=85, includedColumns={0, 1, 2}, rows=[
+ //    [10, 10, 宝马]
+ //]}
+ //    Update--------------
+ //    UpdateRowsEventData{tableId=85, includedColumnsBeforeUpdate={0, 1, 2},
+ // includedColumns={0, 1, 2}, rows=[
+ //        {before=[10, 10, 宝马], after=[10, 11, 宝马]}
+ //]}
+ //    Delete--------------
+ //    DeleteRowsEventData{tableId=85, includedColumns={0, 1, 2}, rows=[
+ //    [11, 10, 奔驰]
+ //]}
+ 
+ 
+ //    Write---------------
+ //    WriteRowsEventData{tableId=70, includedColumns={0, 1, 2, 3, 4, 5, 6, 7}, rows=[
+ //    [12, 10, plan, 1, Tue Jan 01 08:00:00 CST 2019, Tue Jan 01 08:00:00 CST 2019, Tue Jan 01 08:00:00 CST 2019, Tue Jan 01 08:00:00 CST 2019]
+ //]}
+ 
+ 
 ````
 
 
