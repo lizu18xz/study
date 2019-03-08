@@ -9,7 +9,10 @@ import org.apache.kafka.common.utils.Utils;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ *
+ * 如果可以为"name" 则指定分区
+ * */
 public class CustomPartitioner implements Partitioner {
 
     @Override

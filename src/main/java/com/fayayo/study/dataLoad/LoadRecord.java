@@ -54,6 +54,16 @@ public class LoadRecord {
     }
 
 
+    /**
+     * 字段值内出现"escaped by"字符，该字符将被去除，同时保留其后一个字符；
+     默认
+     abc$cc
+
+     加上 ESCAPED BY '$' "
+     abccc
+     *
+     *
+     * */
     public static void loadData(BufferRecordExchange bufferRecordExchange)throws SQLException{
 
         //转换数据为inputStream
@@ -62,14 +72,25 @@ public class LoadRecord {
 
         Connection connection= ConnnectionManager.getConnection();
 
-        String path="D:/app/workspace/idea/study/src/main/java/com/fayayo/study/dataLoad/temp";
+        String path="abc.txt";
 
         //【注意:数据的格式 每列是逗号分隔，每行是\n进行分隔】
-        String loadSql = "load data local infile '"+path+"' ignore into table user_copy " +
+        /*String loadSql = "load data local infile '"+path+"' ignore into table user1 " +
                 "character set 'utf8' " +
                 "fields terminated by ',' " +
                 "optionally enclosed by '\"' " +
-                "lines terminated by '\\n' (username,telephone,mail)";
+                "lines terminated by '\\n' (username,telephone,mail)";*/
+
+       String writeMode="ignore";
+
+        String loadSql = "load data local infile 'datax_tmp.txt' " + writeMode + " into table ";
+        loadSql += "user1";
+        loadSql += " character set 'utf8' ";
+        loadSql += " fields terminated by ',' ";
+        //loadSql+=" optionally enclosed by '\"' ";
+        loadSql += " ESCAPED BY '\\\\' ";
+        loadSql += " lines terminated by '\\n'";
+        loadSql += " (username,telephone,mail)";
 
 
         System.out.println("loadSql=====>"+loadSql);
@@ -94,7 +115,7 @@ public class LoadRecord {
 
         int count=0;
 
-        for (int i=0;i<8;i++){
+        for (int i=0;i<1;i++){
 
             for (int j=0;j<100;j++){
                 StringColumn stringColumn=new StringColumn("test"+count);
@@ -105,7 +126,7 @@ public class LoadRecord {
                 StringColumn telCol=new StringColumn("1392177818"+count);
                 record.addColumn(telCol);
 
-                StringColumn mailCol=new StringColumn("53573349"+count+"@qq.com");
+                StringColumn mailCol=new StringColumn("abc\\vv"+count);
                 record.addColumn(mailCol);
 
                 bufferRecordExchange.sendToWriter(record);
