@@ -300,5 +300,51 @@ ReentrantReadWriteLock会使用两把锁来解决问题，一个读锁，一个�
 这种算法解决了普通余数Hash算法伸缩性差的问题，可以保证在上线、下线服务器的情况下尽量有多的请求命中原来路由到的服务器。
 ````
 
+### cpu负载高学习
+````
+1-代码模拟死循环的情况
 
+1core  2G
+load average: 0.16, 0.14, 0.07
+load average: 0.11, 0.12, 0.07
+load average: 0.09, 0.12, 0.07
+
+2-部署代码之后
+load average: 2.20, 1.65, 1.02
+load average: 1.14, 1.45, 1.10
+load average: 1.20, 1.35, 1.11
+
+
+4712 root      20   0 2527648 162612  13824 S 99.3  8.7  21:07.32 java   
+
+
+top -H -p  4712
+ 4782 root      20   0 2546136 184120  13848 R 85.1  9.8   1:34.16 java                                                                                                                                                                                                      
+ 4714 root      20   0 2546136 184120  13848 S 14.2  9.8   0:16.34 java 
+
+
+打印整个进程的
+jstack  4712 > 4712.txt
+
+printf "%x" 4712
+
+看到RUNNABLE
+
+"http-nio-8080-exec-1" #18 daemon prio=5 os_prio=0 tid=0x00007f7cc49dc000 nid=0x12ae waiting on condition [0x00007f7c91e34000]
+   java.lang.Thread.State: RUNNABLE
+        at java.lang.String.substring(String.java:1969)
+        at com.fayayo.study.cpuLoad.CpuLoad.cpuLoad(CpuLoad.java:43)
+        at com.fayayo.study.cpuLoad.CpuController.load(CpuController.java:29)
+
+
+````
+
+
+### 适配器模式分类模式
+````
+类适配器 (通过引用适配者进行组合实现)
+对象适配器(通过继承适配者进行实现)
+接口适配器 （通过抽象类来实现适配）
+
+````
 
