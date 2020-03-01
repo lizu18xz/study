@@ -348,3 +348,374 @@ printf "%x" 4712
 
 ````
 
+### JUC
+```text
+lock synchronized
+
+synchronized不够灵活
+读写锁更灵活
+
+tryLock()方法立刻返回。
+
+可见性保证
+happens-before
+lock和synchronized有同样的内存语义
+下一个线程加锁后可以看到所有前一个线程解锁前发生的所有操作
+
+
+锁的分类:
+一个锁可能有多种类型
+
+互斥同步锁:阻塞和唤醒带来性能劣势
+悲观锁 lock synchronized
+适合并发写入多：临界区有IO操作
+临界区代码复杂或者循环大
+竞争激烈
+
+
+非互斥同步锁
+乐观锁:
+在更新的时候去检查
+基于CAS算法实现：原子类
+典型例子:
+数据库添加一个字段lock_version
+先查询这个更新语句的version:select * from table;
+然后update set num=2,version=version+1 where version=1 and id=5;
+适合并发写入少,大部分是读取场景
+
+
+公平锁和非公平锁
+为啥要有非公平锁:
+提高效率
+避免唤醒带来的空档期
+
+
+共享锁和排他锁
+排他锁:独占独享
+共享:读锁，可以查看查询
+
+要么多读,要么一个写。
+
+交互方式:
+选择规则
+读线程插队
+升降级
+
+ReentrantReadWriteLock
+读锁插队策略:
+公平锁:不允许插队
+
+非公平:
+假设线程2和4正在同时读取，线程3想要加入写入，拿不到锁，
+于是进入等待队列，线程5不在队列里面，现在想要过来读取
+
+此时有两种策略:
+1-5插队，读可以插队，效率高。容易造成饥饿。
+2-避免饥饿 ，将5塞入队列 ReentrantReadWriteLock选择了这种
+读锁只是在队列中第一个节点是写锁的情况下不能插队
+写锁可以随时插队
+
+
+支持锁降级,不支持升级。
+从写锁降级到读锁,可能后期只需要读取操作,不需要写
+
+
+
+自旋锁和阻塞锁
+
+```
+
+
+### CAS原理
+```text
+并发
+我认为V的值是A,如果是的话就把它改成B
+如果不是A(说明被别人修改过了),那我就不修改了
+
+CAS有三个操作数:内存值V,预期值A,要修改的值B,
+并且只有当预期值A和内存值V相同时,才将内存值修改为B.
+否则什么都不做。
+
+
+AtomicInteger加载Unsafe工具,用来直接操作内存数据
+用Unsafe来实现底层操作
+用volatile修改value字段
+
+
+1-通过unsafe加载AtomicInteger中value字段的地址  valueOffset
+    static {
+        try {
+            valueOffset = unsafe.objectFieldOffset
+                (AtomicInteger.class.getDeclaredField("value"));
+        } catch (Exception ex) { throw new Error(ex); }
+    }
+
+ private volatile int value;
+
+
+public final int getAndAdd(int delta) {
+        return unsafe.getAndAddInt(this, valueOffset, delta);
+    }
+
+
+  public final int getAndAddInt(Object var1, long var2, int var4) {
+        int var5;
+        do {
+        //先执行循环体
+            var5 = this.getIntVolatile(var1, var2);
+            //如果为false就跳出循环
+        } while(!this.compareAndSwapInt(var1, var2, var5, var5 + var4));
+
+        return var5;
+    }
+
+Undafe是CAS的核心类
+Java无法直接访问底层的操作系统
+而是通过本地方法来访问。
+不过尽管如此,JVM提供了Unsafe,提供了硬件级别的原子操作。
+
+valueOffset表示的是变量值在内存中的偏移地址。
+Unsafe就是根据内存偏移地址获取数据的原值的,这样我们就能通过unsafe来实现CAS了。
+
+
+存在问题:
+ABA
+可以使用版本号代替具体的值
+自旋时间长
+
+```
+
+### 栈封闭
+````text
+变量写在线程内部-栈封闭
+在方法里面新建的局部变量，实际上是存储在
+每个线程私有的栈空间里，而每个栈空间是不能被其他线程所访问到的，
+所以不会有线程安全问题。
+
+
+````
+
+### 集合
+```text
+hashmap  arrarlist
+
+变为线程安全的list
+Collections.synchronizedList(new ArrayList())
+内部同步代码块,和vector和hashtable性能差不多。
+
+ConcurrentHashMap和CopyOnWriteArrayList 取代上面的性能不好的集合方法、
+
+
+
+
+CopyOnWriteArrayList：
+适合读多写少
+
+
+
+HashMap每次put操作是都会检查一遍 size（当前容量）>initailCapacity*loadFactor 是否成立。
+如果不成立则HashMap扩容为以前的两倍（数组扩成两倍），
+然后重新计算每个元素在数组中的位置，然后再进行存储。
+
+
+ConcurrentHashMap
+1.7
+最外层为多个segment,每个segment的底层数据结构和hashMap类似
+每个segment独立上了ReentrantLock锁,每个segment之间互不影响，提高并发
+默认16个segment。
+
+
+1.8
+不采用segment,使用CAS和sychronized
+
+并发度提高
+数据结构不同
+拉链+红黑树
+默认链表长度达到8个（哈希冲突达到8）转为红黑树,概率很小(除非hash算法有问题,哈希碰撞严重)
+
+
+
+CopyOnWriteArrayList:并发容器
+代替Vector和SynchronizedList
+
+适用:多操作尽可能快,而写即使慢一些也没关系
+比如:黑名单,白名单。
+读多写少.
+
+读写规则:
+回顾读写锁:读读共享,其他互斥
+
+CopyOnWriteArrayList：
+读取完全不用加锁,写入也不会阻塞读取操作,只有写入和写入之间需要进行同步等待。
+
+CopyOnWrite的含义:
+会对原有数据进行复制,修改新的内容，最后再替换
+创建新副本,读写分离
+
+缺点:
+数据一致性问题,只能保证最终一致性.不能保证实时的一致性。
+内存占用问题:使用了复制机制,进行写操作的时候内存会驻扎两个对象。
+
+ /**
+     * Appends the specified element to the end of this list.
+     *
+     * @param e element to be appended to this list
+     * @return {@code true} (as specified by {@link Collection#add})
+     */
+    public boolean add(E e) {
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            Object[] elements = getArray();
+            int len = elements.length;
+            Object[] newElements = Arrays.copyOf(elements, len + 1);
+            newElements[len] = e;
+            setArray(newElements);
+            return true;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+
+```
+
+### 并发队列
+````text
+put take
+add romove element
+offer poll peek
+
+
+ArrayBlockingQueue在生产者放入数据和消费者获取数据，都是共用同一个锁对象，由此也意味着两者无法真正并行运行，
+而LinkedBlockingQueue之所以能够高效的处理并发数据，
+还因为其对于生产者端和消费者端分别采用了独立的锁来控制数据同步，
+这也意味着在高并发的情况下生产者和消费者可以并行地操作队列中的数据。
+
+````
+
+
+### 线程合作
+```text
+Condition作用
+当线程1需要等待某个条件,就执行condition.await(),线程进入阻塞状态
+
+假设线程2,执行对应条件,达成
+线程2执行condition.signal,这时候JVM就会从被阻塞的线程里找,找到那些等待该condition的线程
+
+```
+
+
+
+### AQS
+```text
+
+实现内部类:
+Sync extends AbstractQueuedSynchronizer
+
+重点类:
+AbstractQueuedSynchronizer
+
+
+内部原理:
+state
+控制线程抢锁和配合的FIFO队列
+期望协作工具类去实现的获取/释放等重要方法
+
+ protected final boolean compareAndSetState(int expect, int update) {
+        // See below for intrinsics setup to support this
+        return unsafe.compareAndSwapInt(this, stateOffset, expect, update);
+  }
+  
+  
+队列用来存放等待的线程  
+  
+获取操作依赖state变量,经常会阻塞,比如获取不到锁  
+释放操作不会阻塞
+  
+  
+AQS用法:
+第一步:类,想好协作逻辑,实现获取/释放方法
+第二部:内部写一个Sync类继承AbstractQueuedSynchronizer
+第三部:根据是否独占来重写tryAcquire/tryRelease  
+或者tryAcquireShard/tryReleaseShard
+  
+  
+  
+CountDownLatch:
+  构造函数
+  int getCount() {
+      return getState();
+  }
+ 
+ 
+  //如果小于0就加入等待队列 doAcquireSharedInterruptibly
+  public final void acquireSharedInterruptibly(int arg)
+              throws InterruptedException {
+          if (Thread.interrupted())
+              throw new InterruptedException();
+          if (tryAcquireShared(arg) < 0)
+              doAcquireSharedInterruptibly(arg);
+      }
+ 
+tryAcquireShared:
+ protected int tryAcquireShared(int acquires) {
+            return (getState() == 0) ? 1 : -1;
+ }  
+  
+如果倒数还没结束,就将线程放入等待队列 ，并且把线程进行阻塞
+ private final boolean parkAndCheckInterrupt() {
+         LockSupport.park(this);
+         return Thread.interrupted();
+     } 
+ 
+  
+countDown方法:
+       CAS操作:
+       protected boolean tryReleaseShared(int releases) {
+              // Decrement count; signal when transition to zero
+              for (;;) {
+                  int c = getState();
+                  if (c == 0)
+                      return false;
+                  int nextc = c-1;
+                  if (compareAndSetState(c, nextc))
+                      return nextc == 0;
+              }
+          }
+ 
+  
+  doReleaseShared(); 唤醒之前阻塞的线程
+   LockSupport.unpark(s.thread);
+  
+```
+
+
+
+### Future和Callable
+````text
+没有返回值
+Runnable不能抛出checked Exception
+
+
+Callable
+V call() throws Exception
+
+
+Future类
+和Callable相互配合
+
+get()
+get(long timeout,timeUnit unit)
+cancel()
+isDone()
+isCanceleD
+
+````
+
+
+
+
+
+
+
